@@ -134,7 +134,7 @@
       width: 38px;
       height: 38px;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       display: grid;
       place-items: center;
       box-shadow: 0 0 24px var(--accent-glow);
@@ -363,8 +363,12 @@
       font-family: var(--font-mono);
       font-size: 11px;
       line-height: 1.5;
-      color: #b8c0ce;
+      color: var(--text-secondary);
       overflow-y: auto;
+    }
+
+    [data-theme="solar"] .log-panel {
+      background: rgba(0, 0, 0, 0.05);
     }
 
     .log-line {
@@ -582,8 +586,12 @@
       margin-top: 10px;
       font-family: var(--font-mono);
       font-size: 12px;
-      color: #d4d8e0;
+      color: var(--text-primary);
       overflow-x: auto;
+    }
+
+    [data-theme="solar"] .code-block {
+      background: rgba(0,0,0,0.06);
     }
 
     .result-table {
@@ -598,7 +606,7 @@
       text-align: left;
       padding: 8px 10px;
       border-bottom: 1px solid var(--border);
-      color: #d4d8e0;
+      color: var(--text-primary);
     }
 
     .result-table th {
@@ -692,6 +700,46 @@
     @keyframes bounce {
       0%, 80%, 100% { transform: translateY(0); }
       40% { transform: translateY(-6px); }
+    }
+
+    /* Light theme overrides */
+    [data-theme="solar"] .status-card,
+    [data-theme="solar"] .metric,
+    [data-theme="solar"] .tool-item,
+    [data-theme="solar"] .btn {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    [data-theme="solar"] .status-card:hover,
+    [data-theme="solar"] .tool-item:hover,
+    [data-theme="solar"] .btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="solar"] .status-card.active {
+      background: linear-gradient(135deg, rgba(107, 76, 230, 0.08), rgba(107, 76, 230, 0.02));
+    }
+
+    [data-theme="solar"] .field input,
+    [data-theme="solar"] .field select,
+    [data-theme="solar"] .input-box textarea {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="solar"] .message.user .message-header {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    [data-theme="solar"] .message.ai {
+      background: var(--bg-panel);
+    }
+
+    [data-theme="solar"] ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="solar"] ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.35);
     }
 
     /* Scrollbar */

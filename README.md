@@ -68,15 +68,16 @@ node server.js --port 8080
 
 ## Clone This Repo
 
-No dependencies to install — just clone and run.
-
 ```bash
 git clone <your-remote-url> research-tools
 cd research-tools
-node server.js
+npm install
+npm start
 ```
 
 Then open **http://localhost:3000**.
+
+There are no runtime npm dependencies — `npm install` simply validates the project. You can also run it directly with `node server.js`.
 
 ### Push to your own remote
 

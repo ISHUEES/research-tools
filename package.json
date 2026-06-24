@@ -1,0 +1,24 @@
+{
+  "name": "research-tools",
+  "version": "1.0.0",
+  "description": "NZ Gazette API client, web research helper, and live AI dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dashboard": "node server.js",
+    "gazette": "node nz_gazette_client.js",
+    "research": "node web_research_helper.js"
+  },
+  "keywords": [
+    "new-zealand",
+    "gazette",
+    "digitalnz",
+    "research",
+    "dashboard"
+  ],
+  "author": "ISHUEES",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

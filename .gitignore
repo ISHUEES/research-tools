@@ -1,0 +1,25 @@
+# Dashboard temp output files
+dashboard-run-*.json
+dashboard-run-*.csv
+test_gazette.csv
+
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment / secrets
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

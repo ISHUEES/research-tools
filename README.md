@@ -45,6 +45,52 @@ Options:
 - `--extract-emails` — include email addresses
 - `--extract-phones` — include phone numbers
 
+## 3. AI Dashboard
+
+A live browser dashboard that runs the NZ Gazette client and streams tool status via Server-Sent Events.
+
+```bash
+node server.js
+```
+
+Then open **http://localhost:3000** in your browser.
+
+Features:
+- Left panel shows live agent status, active tools, runtime logs, and session metrics.
+- Right panel has a search form that runs `nz_gazette_client.js` on the server.
+- Results stream back in real time and are rendered as tables (JSON/CSV).
+- No npm dependencies — uses only Node.js built-ins.
+
+Use a custom port:
+```bash
+node server.js --port 8080
+```
+
+## Clone This Repo
+
+No dependencies to install — just clone and run.
+
+```bash
+git clone <your-remote-url> research-tools
+cd research-tools
+node server.js
+```
+
+Then open **http://localhost:3000**.
+
+### Push to your own remote
+
+Create a new empty repository on GitHub, GitLab, or Bitbucket, then:
+
+```bash
+cd research-tools
+git remote add origin <your-remote-url>
+git branch -M main
+git push -u origin main
+```
+
+After that you can clone it onto any device with Node.js installed.
+
 ## Notes
 
 - Be polite: add delays between requests and respect robots.txt.

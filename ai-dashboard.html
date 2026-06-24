@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kimi AI Command Dashboard</title>
+  <style>
+    :root {
+      --bg-deep: #0b0c10;
+      --bg-panel: rgba(18, 20, 26, 0.78);
+      --bg-panel-solid: #12141a;
+      --border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f0f2f7;
+      --text-secondary: #9aa3b2;
+      --accent: #7c5cff;
+      --accent-glow: rgba(124, 92, 255, 0.35);
+      --accent-2: #00d4aa;
+      --accent-2-glow: rgba(0, 212, 170, 0.3);
+      --danger: #ff5c7c;
+      --warning: #ffbd2e;
+      --info: #4aa8ff;
+      --radius: 18px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(124, 92, 255, 0.12) 0%, transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(0, 212, 170, 0.1) 0%, transparent 35%),
+        linear-gradient(135deg, #0b0c10 0%, #0f1117 50%, #0b0c10 100%);
+      color: var(--text-primary);
+      display: flex;
+    }
+
+    /* Ambient mesh background */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* LEFT PANEL: System / Tools Status */
+    .sidebar {
+      width: 340px;
+      min-width: 300px;
+      max-width: 420px;
+      height: 100vh;
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+      resize: horizontal;
+      overflow: auto;
+    }
+
+    .brand {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 24px var(--accent-glow);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .connection-badge {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent-2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .connection-badge.disconnected {
+      color: var(--danger);
+    }
+
+    .connection-badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulse 1.8s infinite;
+    }
+
+    .sidebar-section {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-secondary);
+    }
+
+    .live-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent-2);
+      background: rgba(0, 212, 170, 0.12);
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 212, 170, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .live-badge::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 8px var(--accent-2);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .status-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .status-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .status-card.active {
+      border-color: rgba(124, 92, 255, 0.4);
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.03));
+      box-shadow: 0 0 18px rgba(124, 92, 255, 0.1);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .status-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+    }
+
+    .status-dot.ready { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+    .status-dot.working { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1.2s infinite; }
+    .status-dot.idle { background: var(--text-secondary); }
+    .status-dot.error { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+    .status-state {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 10px rgba(124, 92, 255, 0.4);
+    }
+
+    .tool-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tool-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      font-size: 12px;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+
+    .tool-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .tool-item.running {
+      border-color: rgba(124, 92, 255, 0.35);
+      background: rgba(124, 92, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .tool-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .tool-item.running .tool-icon {
+      background: var(--accent);
+      color: white;
+    }
+
+    .tool-meta {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 110px;
+    }
+
+    .log-panel {
+      flex: 1;
+      min-height: 120px;
+      max-height: 220px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      color: #b8c0ce;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      margin-bottom: 4px;
+      opacity: 0.85;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* RIGHT PANEL: Output */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 64px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+    }
+
+    .session-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .session-title span {
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-left: 8px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), #8b6cff);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 0 14px rgba(124, 92, 255, 0.25);
+    }
+
+    .btn.primary:hover {
+      box-shadow: 0 0 22px rgba(124, 92, 255, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .search-bar {
+      padding: 18px 28px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+    }
+
+    .field input, .field select {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 11px;
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      min-width: 110px;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: rgba(124, 92, 255, 0.5);
+    }
+
+    .field.query { flex: 1; min-width: 200px; }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .message {
+      max-width: 82%;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.22), rgba(124, 92, 255, 0.1));
+      border: 1px solid rgba(124, 92, 255, 0.25);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.ai {
+      align-self: flex-start;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      backdrop-filter: blur(12px);
+    }
+
+    .message.error {
+      align-self: flex-start;
+      background: rgba(255, 92, 124, 0.1);
+      border: 1px solid rgba(255, 92, 124, 0.3);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+    }
+
+    .message.user .message-header {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .code-block {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #d4d8e0;
+      overflow-x: auto;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .result-table th, .result-table td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      color: #d4d8e0;
+    }
+
+    .result-table th {
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .input-area {
+      padding: 18px 28px 28px;
+      background: linear-gradient(to top, rgba(11,12,16,0.95), transparent);
+    }
+
+    .input-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 6px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    .input-box textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 12px 14px;
+      resize: none;
+      max-height: 160px;
+      min-height: 24px;
+    }
+
+    .input-box textarea::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .send-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), #9b7cff);
+      color: white;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 0 18px var(--accent-glow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 26px var(--accent-glow);
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 14px 18px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      align-self: flex-start;
+      backdrop-filter: blur(12px);
+    }
+
+    .typing-indicator.active { display: flex; }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    @media (max-width: 1100px) {
+      .sidebar { width: 280px; min-width: 260px; }
+      .search-form { flex-direction: column; align-items: stretch; }
+      .field.query { min-width: auto; }
+      .field input, .field select { width: 100%; }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .message { max-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- LEFT PANEL: System / Tools / Running Status -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-icon">K</div>
+        <div>
+          <div class="brand-title">Kimi Command Center</div>
+          <div class="brand-subtitle">Live agent runtime</div>
+        </div>
+      </div>
+      <div class="connection-badge" id="connection-badge">SSE Connected</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span class="section-title">Agent Status</span>
+        <span class="live-badge">LIVE</span>
+      </div>
+      <div class="status-card active" id="agent-status">
+        <div class="status-row">
+          <div class="status-name"><span class="status-dot working" id="agent-dot"></span> Reasoning Engine</div>
+          <div class="status-state" id="agent-state">CONNECTING</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="agent-progress" style="width: 0%"></div></div>
+      </div>
+      <div class="status-card">
+        <div class="status-row">
+          <div class="status-name"><span class="status-dot ready"></span> Tool Runtime</div>
+          <div class="status-state" id="runtime-state">READY</div>
+        </div>
+      </div>
+      <div class="status-card">
+        <div class="status-row">
+          <div class="status-name"><span class="status-dot ready"></span> File System</div>
+          <div class="status-state">ACCESSIBLE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span class="section-title">Active Tools</span>
+      </div>
+      <div class="tool-list" id="tool-list">
+        <div class="tool-item" id="tool-read">
+          <div class="tool-icon">R</div>
+          <div>Read</div>
+          <div class="tool-meta">idle</div>
+        </div>
+        <div class="tool-item" id="tool-bash">
+          <div class="tool-icon">$</div>
+          <div>Bash</div>
+          <div class="tool-meta">idle</div>
+        </div>
+        <div class="tool-item" id="tool-grep">
+          <div class="tool-icon">G</div>
+          <div>Grep</div>
+          <div class="tool-meta">idle</div>
+        </div>
+        <div class="tool-item" id="tool-write">
+          <div class="tool-icon">W</div>
+          <div>Write</div>
+          <div class="tool-meta">idle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span class="section-title">Runtime Log</span>
+      </div>
+      <div class="log-panel" id="log-panel">
+        <div class="log-line">Waiting for server connection...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span class="section-title">Session Metrics</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="metric-value" id="metric-turns">0</div>
+          <div class="metric-label">Turns</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="metric-tools">0</div>
+          <div class="metric-label">Tool Calls</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="metric-files">0</div>
+          <div class="metric-label">Files Read</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" id="metric-time">0s</div>
+          <div class="metric-label">Elapsed</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT PANEL: Conversation / Output -->
+  <main class="main">
+    <header class="topbar">
+      <div class="session-title">Current Session <span>research-tools / NZ Gazette API</span></div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="clearChat()">Clear</button>
+        <button class="btn" onclick="exportChat()">Export</button>
+      </div>
+    </header>
+
+    <div class="search-bar">
+      <form class="search-form" id="gazette-form" onsubmit="runGazetteSearch(event)">
+        <div class="field query">
+          <label for="search-query">Query</label>
+          <input type="text" id="search-query" placeholder="e.g. bankruptcy" value="bankruptcy" />
+        </div>
+        <div class="field">
+          <label for="search-notice-type">Notice Type</label>
+          <input type="text" id="search-notice-type" placeholder="Any" />
+        </div>
+        <div class="field">
+          <label for="search-pages">Pages</label>
+          <input type="number" id="search-pages" value="1" min="1" max="10" />
+        </div>
+        <div class="field">
+          <label for="search-format">Format</label>
+          <select id="search-format">
+            <option value="json">JSON</option>
+            <option value="csv">CSV</option>
+          </select>
+        </div>
+        <button type="submit" class="btn primary" id="search-btn">Search Gazette</button>
+      </form>
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="message ai">
+        <div class="message-header">Kimi</div>
+        Dashboard connected. Enter a query above to run the NZ Gazette client live, or type a message below.
+      </div>
+
+      <div class="typing-indicator" id="typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-box">
+        <textarea id="user-input" rows="1" placeholder="Type a command or question..."></textarea>
+        <button class="send-btn" onclick="sendMessage()" aria-label="Send">➜</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('user-input');
+    const typing = document.getElementById('typing');
+    const agentDot = document.getElementById('agent-dot');
+    const agentState = document.getElementById('agent-state');
+    const agentProgress = document.getElementById('agent-progress');
+    const runtimeState = document.getElementById('runtime-state');
+    const connectionBadge = document.getElementById('connection-badge');
+    const logPanel = document.getElementById('log-panel');
+    const toolItems = {
+      read: document.getElementById('tool-read'),
+      bash: document.getElementById('tool-bash'),
+      grep: document.getElementById('tool-grep'),
+      write: document.getElementById('tool-write')
+    };
+
+    let turns = 0;
+    let toolCalls = 0;
+    let sessionStart = Date.now();
+
+    function updateElapsed() {
+      const seconds = Math.floor((Date.now() - sessionStart) / 1000);
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      document.getElementById('metric-time').textContent = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }
+    setInterval(updateElapsed, 1000);
+
+    function setStatus(state, progress) {
+      agentState.textContent = state;
+      agentProgress.style.width = progress + '%';
+      agentDot.className = 'status-dot';
+      if (state === 'ERROR') agentDot.classList.add('error');
+      else if (state === 'IDLE' || state === 'CONNECTED' || state === 'COMPLETE') agentDot.classList.add('ready');
+      else agentDot.classList.add('working');
+    }
+
+    function activateTool(name, detail) {
+      Object.values(toolItems).forEach(t => {
+        t.classList.remove('running');
+        t.querySelector('.tool-meta').textContent = 'idle';
+      });
+      if (toolItems[name]) {
+        toolItems[name].classList.add('running');
+        toolItems[name].querySelector('.tool-meta').textContent = detail || 'running';
+      }
+      toolCalls++;
+      document.getElementById('metric-tools').textContent = toolCalls;
+    }
+
+    function appendLog(message) {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.textContent = `> ${message}`;
+      logPanel.appendChild(line);
+      logPanel.scrollTop = logPanel.scrollHeight;
+      // Trim old lines
+      while (logPanel.children.length > 100) {
+        logPanel.removeChild(logPanel.firstChild);
+      }
+    }
+
+    function appendMessage(text, sender = 'user', isError = false) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      if (isError) msg.classList.add('error');
+      const header = sender === 'user' ? 'You' : (isError ? 'Error' : 'Kimi');
+      msg.innerHTML = `<div class="message-header">${header}</div>` + text;
+      chat.insertBefore(msg, typing);
+      chat.scrollTop = chat.scrollHeight;
+      if (sender === 'user') {
+        turns++;
+        document.getElementById('metric-turns').textContent = turns;
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\n/g, '<br>');
+    }
+
+    function renderResults(format, data) {
+      if (format === 'csv') {
+        const rows = data.split('\n').filter(line => line.trim());
+        if (!rows.length) return '<p>No results.</p>';
+        const headers = rows[0].split(',');
+        let html = '<table class="result-table"><thead><tr>';
+        for (const h of headers) html += `<th>${escapeHtml(h)}</th>`;
+        html += '</tr></thead><tbody>';
+        for (let i = 1; i < rows.length; i++) {
+          html += '<tr>';
+          // Simple CSV split (does not handle quoted commas, but sufficient for display)
+          for (const cell of rows[i].split(',')) {
+            html += `<td>${escapeHtml(cell)}</td>`;
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+      }
+
+      if (Array.isArray(data)) {
+        if (!data.length) return '<p>No results.</p>';
+        const headers = Object.keys(data[0]);
+        let html = `<p>Returned ${data.length} record(s).</p>`;
+        html += '<table class="result-table"><thead><tr>';
+        for (const h of headers) html += `<th>${escapeHtml(h)}</th>`;
+        html += '</tr></thead><tbody>';
+        for (const row of data.slice(0, 20)) {
+          html += '<tr>';
+          for (const h of headers) {
+            const val = row[h];
+            const display = Array.isArray(val) ? val.join(', ') : String(val ?? '');
+            html += `<td>${escapeHtml(display.slice(0, 200))}</td>`;
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        if (data.length > 20) html += `<p><em>...and ${data.length - 20} more.</em></p>`;
+        return html;
+      }
+
+      return `<pre class="code-block">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    }
+
+    // Server-Sent Events
+    const evtSource = new EventSource('/events');
+
+    evtSource.onopen = () => {
+      connectionBadge.textContent = 'SSE Connected';
+      connectionBadge.classList.remove('disconnected');
+      appendLog('Connected to agent runtime');
+    };
+
+    evtSource.onerror = () => {
+      connectionBadge.textContent = 'Disconnected';
+      connectionBadge.classList.add('disconnected');
+      setStatus('ERROR', 0);
+    };
+
+    evtSource.addEventListener('status', (e) => {
+      const data = JSON.parse(e.data);
+      setStatus(data.state, data.progress);
+      runtimeState.textContent = data.state;
+    });
+
+    evtSource.addEventListener('tool', (e) => {
+      const data = JSON.parse(e.data);
+      activateTool(data.name, data.detail);
+    });
+
+    evtSource.addEventListener('log', (e) => {
+      const data = JSON.parse(e.data);
+      appendLog(data.message);
+    });
+
+    evtSource.addEventListener('complete', (e) => {
+      const data = JSON.parse(e.data);
+      typing.classList.remove('active');
+      const summary = data.count != null ? `Search complete — ${data.count} record(s) found.` : 'Search complete.';
+      appendMessage(`<div>${summary}</div>` + renderResults(data.format, data.data), 'ai');
+      setStatus('IDLE', 100);
+      document.getElementById('search-btn').disabled = false;
+      document.getElementById('search-btn').textContent = 'Search Gazette';
+    });
+
+    evtSource.addEventListener('error', (e) => {
+      const data = JSON.parse(e.data);
+      typing.classList.remove('active');
+      appendMessage(escapeHtml(data.message), 'ai', true);
+      setStatus('ERROR', 100);
+      document.getElementById('search-btn').disabled = false;
+      document.getElementById('search-btn').textContent = 'Search Gazette';
+    });
+
+    async function runGazetteSearch(e) {
+      e.preventDefault();
+      const query = document.getElementById('search-query').value.trim();
+      if (!query) return;
+
+      const btn = document.getElementById('search-btn');
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      typing.classList.add('active');
+      clearChat();
+      appendMessage(`Running NZ Gazette search for <strong>${escapeHtml(query)}</strong>...`, 'ai');
+
+      const payload = {
+        query: query,
+        noticeType: document.getElementById('search-notice-type').value.trim(),
+        pages: parseInt(document.getElementById('search-pages').value, 10) || 1,
+        format: document.getElementById('search-format').value,
+      };
+
+      try {
+        const res = await fetch('/api/gazette/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Request failed' }));
+          throw new Error(err.error || 'Request failed');
+        }
+      } catch (err) {
+        typing.classList.remove('active');
+        appendMessage(escapeHtml(err.message), 'ai', true);
+        btn.disabled = false;
+        btn.textContent = 'Search Gazette';
+        setStatus('ERROR', 100);
+      }
+    }
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(escapeHtml(text), 'user');
+      input.value = '';
+      input.rows = 1;
+
+      // Free-form messages are echoed locally since this dashboard is focused on Gazette runs.
+      // In a full integration, this would POST to a chat endpoint.
+      typing.classList.add('active');
+      setTimeout(() => {
+        typing.classList.remove('active');
+        appendMessage('Use the search bar above to query the NZ Gazette, or type another message.', 'ai');
+      }, 600);
+    }
+
+    function clearChat() {
+      const messages = chat.querySelectorAll('.message');
+      messages.forEach(m => m.remove());
+    }
+
+    function exportChat() {
+      const messages = [...chat.querySelectorAll('.message')].map(m => m.textContent).join('\n\n');
+      if (!messages.trim()) return;
+      const blob = new Blob([messages], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kimi-session.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      input.rows = Math.min(6, Math.max(1, Math.ceil(input.scrollHeight / 24)));
+    });
+  </script>
+</body>
+</html>
